@@ -26,7 +26,7 @@ q_table = np.zeros((state_space_size, action_space_size))
 num_episodes = 10000
 max_steps_per_episode = 100
 
-learning_rate = 0.1
+learning_rate = 0.9
 discount_rate = 0.9
 
 exploration_rate = 1
@@ -34,10 +34,15 @@ max_exploration_rate = 1
 min_exploration_rate = 0.01
 exploration_decay_rate = 0.001
 
+# gen the real 100% action win list
+real_winActionMatrix = gen_win_list(len(env.state_space), env.action_space)
+print(real_winActionMatrix)
+
 total_win_move_count = 0
 five_sum = 0
 ten_sum = 0
-for trial in range(20):
+trials = 1
+for trial in range(trials):
     win_count = []
     rewards_all_episodes = []
 
@@ -93,10 +98,10 @@ for trial in range(20):
     #print("************Average reward per thousand episodes *************\n")
     for r in win_per_thousand_episodes:
         if count == 5000:
-            print(count, ": ", str(sum(r)))
+           # print(count, ": ", str(sum(r)))
             five_sum +=sum(r)
         if count == 10000:
-            print(count,": ", str(sum(r)))
+           # print(count,": ", str(sum(r)))
             ten_sum += sum(r)
         count +=1000
 
@@ -109,11 +114,9 @@ for trial in range(20):
     for state in range(len(q_table)):
         action_order = np.argmax(q_table[state,:])
         machine_winActionMatrix.append(action_order)
-    # print(machine_winActionMatrix)
+    #print(machine_winActionMatrix)
 
-    #gen the real 100% action win list
-    real_winActionMatrix = gen_win_list(len(env.state_space),env.action_space)
-    #print(real_winActionMatrix)
+
 
     #compare the two lists
     win_move_count = 0
@@ -127,13 +130,15 @@ for trial in range(20):
             total_possible_move +=1
         matrix_count +=1
 
-    print("winning moves/possible winning moves = " , win_move_count , "/" , total_possible_move)
+    #print("winning moves/possible winning moves = " , win_move_count , "/" , total_possible_move)
     total_win_move_count += win_move_count
-    input()
+    #input()
+    if trial%10 == 0:
+        print(trial)
 
-print("avg 5,000: " , five_sum/20)
-print("avg 10,000: " , ten_sum/20)
-print("avg move: " , total_win_move_count/20 , "/" , total_possible_move)
+print("avg 5,000: " , five_sum/trials)
+print("avg 10,000: " , ten_sum/trials)
+print("avg move: " , total_win_move_count/trials , "/" , total_possible_move)
 
 # print("\n\n********************************")
 # print(" Time to play the Machine!")

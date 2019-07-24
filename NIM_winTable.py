@@ -46,19 +46,25 @@ def gen_win_list(n,action_space):
 
             #for each possible move in a given state
             for pMove in action_space:
+
                 #the move must be legal
                 if currentStone >= pMove and winMatrix[currentStone-pMove] == 2:
-                    winMatrix.append(1)
                     action_order_matrix.append(action_order)
                     moveFound = True
 
                 action_order +=1
-
             if(moveFound):
+                winMatrix.append(1)
                 winActionOrder.append(action_order_matrix)
 
             else:
                 winMatrix.append(2)
                 winActionOrder.append([-1])
+            print(winMatrix)
+            print(winActionOrder)
+            input()
+
 
     return winActionOrder
+
+print(gen_win_list(10,[1,3,4]))
