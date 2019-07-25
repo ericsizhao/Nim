@@ -60,11 +60,6 @@ def gen_win_list(n,action_space):
             else:
                 winMatrix.append(2)
                 winActionOrder.append([-1])
-            print(winMatrix)
-            print(winActionOrder)
-            input()
 
 
     return winActionOrder
-
-print(gen_win_list(10,[1,3,4]))
