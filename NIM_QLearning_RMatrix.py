@@ -24,9 +24,10 @@ q_table = np.zeros((state_space_size, action_space_size))
 
 
 num_episodes = 10000
+performing_episodes = 1000
 max_steps_per_episode = 100
 
-learning_rate = 0.9
+learning_rate = 0.1
 discount_rate = 0.9
 
 exploration_rate = 1
@@ -36,11 +37,11 @@ exploration_decay_rate = 0.001
 
 # gen the real 100% action win list
 real_winActionMatrix = gen_win_list(len(env.state_space), env.action_space)
-print(real_winActionMatrix)
 
 total_win_move_count = 0
 five_sum = 0
 ten_sum = 0
+performance_sum = 0
 trials = 1
 for trial in range(trials):
     win_count = []
@@ -49,35 +50,48 @@ for trial in range(trials):
     #Q-learning algorithm
 
     #everything that happens each episode
-    for episode in range(num_episodes):
+    for episode in range(num_episodes + performing_episodes):
         #reset the env to inital state
         state = env.reset()
 
         #keeps track of whether or not the episode is finished
         done = False
 
+        #keeps track of training/performing
+        training = episode > num_episodes
+
         #keeps track of rewards in each episode
         rewards_current_episode = 0
+
         for step in range(max_steps_per_episode):
 
-            #exploration-exploitation trade-off
-            exploration_rate_threshold = random.uniform(0,1)
-            if exploration_rate_threshold > exploration_rate:
-                action_order = np.argmax(q_table[state,:])
+            if training:
+                #exploration-exploitation trade-off
+                exploration_rate_threshold = random.uniform(0,1)
+                if exploration_rate_threshold > exploration_rate:
+                    action_order = np.argmax(q_table[state,:])
+                else:
+                    #pick a random action
+                    action_order = rand_action(env.action_space)
+
+            #during performance we just pick the max q table arg.
             else:
-                #pick a random action
-                action_order = rand_action(env.action_space)
+                action_order = np.argmax(q_table[state, :])
 
             new_state,reward, done, info = env.step(action_order)
 
-            #Update Q-table for Q(s,a)
-            q_table[state,action_order] = q_table[state,action_order] * (1 - learning_rate) + \
+            #only update q-table during training
+            if training:
+                #Update Q-table for Q(s,a)
+                q_table[state,action_order] = q_table[state,action_order] * (1 - learning_rate) + \
                                           learning_rate * (reward + discount_rate * np.max(q_table[new_state,:]))
+
             state = new_state
             rewards_current_episode += reward
 
             if done == True:
                 break
+
         #Exploration rate decay
         exploration_rate = min_exploration_rate + \
                            (max_exploration_rate - min_exploration_rate) * np.exp(-exploration_decay_rate * episode)
@@ -91,18 +105,21 @@ for trial in range(trials):
             win_count.append(0)
 
     #Calculate and print the average reward per thousand episodes
-
-    rewards_per_thousand_episodes = np.split(np.array(rewards_all_episodes), num_episodes/1000)
-    win_per_thousand_episodes = np.split(np.array(win_count), num_episodes/1000)
+    rewards_per_thousand_episodes = np.split(np.array(rewards_all_episodes), (num_episodes + performing_episodes)/1000)
+    win_per_thousand_episodes = np.split(np.array(win_count), (num_episodes + performing_episodes)/1000)
     count = 1000
     #print("************Average reward per thousand episodes *************\n")
     for r in win_per_thousand_episodes:
+        print(count, ": ", str(sum(r)))
         if count == 5000:
-           # print(count, ": ", str(sum(r)))
-            five_sum +=sum(r)
+            # print(count, ": ", str(sum(r)))
+            five_sum += sum(r)
         if count == 10000:
-           # print(count,": ", str(sum(r)))
+            # print(count,": ", str(sum(r)))
             ten_sum += sum(r)
+        if count == 11000:
+            # print(count,": ", str(sum(r)))
+            performance_sum += sum(r)
         count +=1000
 
     #Print updated Q-table
@@ -114,7 +131,6 @@ for trial in range(trials):
     for state in range(len(q_table)):
         action_order = np.argmax(q_table[state,:])
         machine_winActionMatrix.append(action_order)
-    #print(machine_winActionMatrix)
 
 
 
@@ -138,6 +154,7 @@ for trial in range(trials):
 
 print("avg 5,000: " , five_sum/trials)
 print("avg 10,000: " , ten_sum/trials)
+print("avg performance: ", performance_sum/trials)
 print("avg move: " , total_win_move_count/trials , "/" , total_possible_move)
 
 # print("\n\n********************************")
