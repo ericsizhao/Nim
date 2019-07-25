@@ -25,9 +25,9 @@ q_table = np.zeros((state_space_size, action_space_size))
 
 num_episodes = 10000
 performing_episodes = 1000
-max_steps_per_episode = 100
+max_steps_per_episode = 10000
 
-learning_rate = 0.1
+learning_rate = 0.4
 discount_rate = 0.9
 
 exploration_rate = 1
@@ -42,7 +42,7 @@ total_win_move_count = 0
 five_sum = 0
 ten_sum = 0
 performance_sum = 0
-trials = 1
+trials = 100
 for trial in range(trials):
     win_count = []
     rewards_all_episodes = []
@@ -58,7 +58,7 @@ for trial in range(trials):
         done = False
 
         #keeps track of training/performing
-        training = episode > num_episodes
+        training = episode < num_episodes
 
         #keeps track of rewards in each episode
         rewards_current_episode = 0
@@ -83,8 +83,7 @@ for trial in range(trials):
             #only update q-table during training
             if training:
                 #Update Q-table for Q(s,a)
-                q_table[state,action_order] = q_table[state,action_order] * (1 - learning_rate) + \
-                                          learning_rate * (reward + discount_rate * np.max(q_table[new_state,:]))
+                q_table[state,action_order] = q_table[state,action_order] * (1 - learning_rate) + learning_rate * (reward + discount_rate * np.max(q_table[new_state,:]))
 
             state = new_state
             rewards_current_episode += reward
@@ -110,7 +109,6 @@ for trial in range(trials):
     count = 1000
     #print("************Average reward per thousand episodes *************\n")
     for r in win_per_thousand_episodes:
-        print(count, ": ", str(sum(r)))
         if count == 5000:
             # print(count, ": ", str(sum(r)))
             five_sum += sum(r)
@@ -131,7 +129,6 @@ for trial in range(trials):
     for state in range(len(q_table)):
         action_order = np.argmax(q_table[state,:])
         machine_winActionMatrix.append(action_order)
-
 
 
     #compare the two lists
