@@ -1,5 +1,7 @@
 import random
 import numpy as np
+from NIM_winTable import gen_win_list
+
 class NIM_env:
 
     #CHECKED
@@ -10,6 +12,7 @@ class NIM_env:
         self.current_stones = len(self.state_space) - 1
         self.intial_stones = len(self.state_space) - 1
         self.reward_matrix = self.gen_reward_matrix()
+        self.optimal_action_space = self.gen_optimal_action_space()
 
 
     #WE ARE NOT CHECKING IF THE MACHINE IS MAKING A LEGAL MOVE OR NOT
@@ -21,7 +24,7 @@ class NIM_env:
     #   reward - the reward from doing that action
     #   done - has the game ended yet
     #   info - diagnostic information helped for debugging - opponent's move
-    def step(self,action_order,human = False):
+    def step(self,action_order,intelligence = 0,human = False):
 
         #establish the current states of the game
         done = False
@@ -43,7 +46,7 @@ class NIM_env:
             self.current_stones -= action_remove
 
             #Opponent makes his move
-            oppoMove = self.opponentMove(human)
+            oppoMove = self.opponentMove(intelligence,human)
             info = oppoMove
             self.current_stones -= oppoMove
 
@@ -57,7 +60,7 @@ class NIM_env:
     #Will return 0 if machine has won (b/c oppo cannot make a move)
     #Will return -1 if machine has made an illegal move
     #Will return (amount of stones opponent wishes to remove) otherwise
-    def opponentMove(self,human = False):
+    def opponentMove(self,intelligence = 0,human = False):
         if human:
 
             self.render()
@@ -66,6 +69,7 @@ class NIM_env:
             #input protection ensures a valid response
             illegalMove = True
             removeStonesPhrase = "How many stones do you want to remove?: "
+            print("nani")
 
             while(illegalMove):
                 removeStones = intInputProtection(removeStonesPhrase, min(self.action_space))
@@ -82,7 +86,16 @@ class NIM_env:
             illegal_Move = True
             while(illegal_Move):
                 #get a random action
-                action_order = rand_action(self.action_space)
+                mistakeMove = random.random()
+                if intelligence > mistakeMove:
+                    #action_order must be an int, and optimal_action_space[stones] returns a list
+                    action_order = self.optimal_action_space[self.current_stones][0]
+                    #if there is no optimal move, just remove the least number of stones possible
+                    if action_order == -1:
+                        action_order = 0
+                else:
+                    action_order = rand_action(self.action_space)
+
                 action_remove = self.action_space[action_order]
 
                 illegal_Move = self.isIllegalMove(action_remove)
@@ -154,7 +167,11 @@ class NIM_env:
         print("\n")
         print ("There are", self.current_stones, "stones on the board!")
         #just prints the current game's state...      
-        
+
+    #generates the optimal move matrix
+    def gen_optimal_action_space(self):
+        return gen_win_list(len(self.state_space), self.action_space)
+
 #generates a random action
 #returns a tuple: (action_order)
     #action_order - the index of stones we wish to remove
@@ -204,7 +221,6 @@ def gen_state_space():
     for x in range (n + 1):
         stateSpace.append(x)
     return stateSpace
-
 
 #CHECKED
 #Function Purpose - protects input for integers

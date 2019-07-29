@@ -25,15 +25,18 @@ q_table = np.zeros((state_space_size, action_space_size))
 
 num_episodes = 10000
 performing_episodes = 1000
-max_steps_per_episode = 10000
+max_steps_per_episode = 1000
 
-learning_rate = 0.4
+learning_rate = 0.1
 discount_rate = 0.9
 
 exploration_rate = 1
 max_exploration_rate = 1
 min_exploration_rate = 0.01
 exploration_decay_rate = 0.001
+
+intelligence_training = 0
+intelligence_performance = 0.8
 
 # gen the real 100% action win list
 real_winActionMatrix = gen_win_list(len(env.state_space), env.action_space)
@@ -74,16 +77,16 @@ for trial in range(trials):
                     #pick a random action
                     action_order = rand_action(env.action_space)
 
+                new_state, reward, done, info = env.step(action_order, intelligence_training)
+
+                # Update Q-table for Q(s,a)
+                q_table[state, action_order] = q_table[state, action_order] * (1 - learning_rate) + learning_rate * (reward + discount_rate * np.max(q_table[new_state, :]))
+
+
             #during performance we just pick the max q table arg.
             else:
                 action_order = np.argmax(q_table[state, :])
-
-            new_state,reward, done, info = env.step(action_order)
-
-            #only update q-table during training
-            if training:
-                #Update Q-table for Q(s,a)
-                q_table[state,action_order] = q_table[state,action_order] * (1 - learning_rate) + learning_rate * (reward + discount_rate * np.max(q_table[new_state,:]))
+                new_state, reward, done, info = env.step(action_order, intelligence_performance)
 
             state = new_state
             rewards_current_episode += reward
