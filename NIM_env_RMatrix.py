@@ -69,7 +69,6 @@ class NIM_env:
             #input protection ensures a valid response
             illegalMove = True
             removeStonesPhrase = "How many stones do you want to remove?: "
-            print("nani")
 
             while(illegalMove):
                 removeStones = intInputProtection(removeStonesPhrase, min(self.action_space))
