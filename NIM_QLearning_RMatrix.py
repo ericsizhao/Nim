@@ -134,7 +134,6 @@ while (intelligence_testing > 0):
             if count == training_episodes + testing_episodes:
                 # print(count,": ", str(sum(r)))
                 performance_sum += sum(r)
-                print("we got here!")
             count +=1000
 
         #Print updated Q-table
