@@ -3,7 +3,6 @@ from NIM_env_RMatrix import *
 from NIM_winTable import gen_win_list
 import random
 import time
-from IPython.display import clear_output
 
 #That can be changed
 #Learning_rate, how much the Machine cares about new info
@@ -22,8 +21,7 @@ state_space_size= len(env.state_space)
 
 q_table = np.zeros((state_space_size, action_space_size))
 
-
-training_episodes = 20000
+training_episodes = 10000
 testing_episodes = 1000
 max_steps_per_episode = 1000
 
@@ -36,27 +34,29 @@ min_exploration_rate = 0.01
 exploration_decay_rate = 0.001
 
 intelligence_training = 0
-intelligence_testing = 1
+intelligence_testing = 0
 
 # gen the real 100% action win list
 real_winActionMatrix = env.gen_optimal_action_space()
 
 total_win_move_count = 0
-five_sum = 0
-ten_sum = 0
+#five_sum = 0
+#ten_sum = 0
 performance_sum = 0
+final_string = ""
+avg_omc = 0
 
 #note trials represents the number of machines we train
-trials = 20
+trials = 1
 
 #while the average performance is less than 900
 #we are decreasing intelligence of the opponent
-while (intelligence_testing > 0):
+while (intelligence_testing < 1 ):
 
     #reset the variables
     total_win_move_count = 0
-    five_sum = 0
-    ten_sum = 0
+    #five_sum = 0
+    #ten_sum = 0
     performance_sum = 0
 
     for trial in range(trials):
@@ -125,12 +125,12 @@ while (intelligence_testing > 0):
         count = 1000
         #print("************Average reward per thousand episodes *************\n")
         for r in win_per_thousand_episodes:
-            if count == 5000:
+            #if count == 5000:
                 # print(count, ": ", str(sum(r)))
-                five_sum += sum(r)
-            if count == 10000:
+                #five_sum += sum(r)
+           # if count == 10000:
                 # print(count,": ", str(sum(r)))
-                ten_sum += sum(r)
+               # ten_sum += sum(r)
             if count == training_episodes + testing_episodes:
                 # print(count,": ", str(sum(r)))
                 performance_sum += sum(r)
@@ -145,6 +145,7 @@ while (intelligence_testing > 0):
         for state in range(len(q_table)):
             action_order = np.argmax(q_table[state,:])
             machine_winActionMatrix.append(action_order)
+        print(machine_winActionMatrix)
 
         #compare the two lists
         win_move_count = 0
@@ -163,15 +164,23 @@ while (intelligence_testing > 0):
         #input()
         #if trial%10 == 0:
             #print(trial)
+        intelligence_testing += 2
 
+
+    final_string += str(performance_sum/trials)+ "\n"
+    avg_omc += total_win_move_count/trials
     print("intelligence of testing opponent: ", intelligence_testing)
-    print("avg 5,000: " , five_sum/trials)
-    print("avg 10,000: " , ten_sum/trials)
+    #print("avg 5,000: " , five_sum/trials)
+    #print("avg 10,000: " , ten_sum/trials)
     print("avg performance: ", performance_sum/trials)
     print("avg move: " , total_win_move_count/trials , "/" , total_possible_move)
     print()
 
-    intelligence_testing -= 0.1
+
+
+print("-----------------")
+print(final_string)
+print(avg_omc/11)
 
 
 # print("\n\n********************************")
