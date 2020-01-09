@@ -1,1 +1,1 @@
-print(""v2)
+print("v2")
